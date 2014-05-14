@@ -26,6 +26,8 @@ def test_real(n_updates=100):
     np.random.seed(0)
     # simple lag test
     seq = np.random.randn(n_seq, n_steps, n_in)
+    print 'seq1'
+    print seq
 
     targets = np.zeros((n_seq, n_steps, n_out))
     targets[:, 1:, 0] = seq[:, :-1, 3]  # delayed 1
@@ -33,10 +35,14 @@ def test_real(n_updates=100):
     targets[:, 2:, 2] = seq[:, :-2, 0]  # delayed 2
 
     targets += 0.01 * np.random.standard_normal(targets.shape)
+    print 'targets'
+    print targets
 
     # SequenceDataset wants a list of sequences
     # this allows them to be different lengths, but here they're not
     seq = [i for i in seq]
+    print 'seq2'
+    print seq
     targets = [i for i in targets]
 
     gradient_dataset = SequenceDataset([seq, targets], batch_size=None,
@@ -50,6 +56,7 @@ def test_real(n_updates=100):
     opt = hf_optimizer(p=model.rnn.params, inputs=[model.x, model.y],
                        s=model.rnn.y_pred,
                        costs=[model.rnn.loss(model.y)], h=model.rnn.h)
+    print model
 
     opt.train(gradient_dataset, cg_dataset, num_updates=n_updates)
 
@@ -206,9 +213,13 @@ def test_softmax(n_updates=250):
                                    cmap='gray')
         ax2.set_title('blue: true class, grayscale: probs assigned by model')
 
-
-if __name__ == "__main__":
+def run():
     logging.basicConfig(level=logging.INFO)
     #test_real(n_updates=20)
+    test_binary(multiple_out=True, n_updates=20)
+    #test_softmax(n_updates=20)
+if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO)
+    test_real(n_updates=20)
     #test_binary(multiple_out=True, n_updates=20)
-    test_softmax(n_updates=20)
+    #test_softmax(n_updates=20)
