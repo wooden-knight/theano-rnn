@@ -11,6 +11,7 @@ import time
 import os
 import datetime
 import cPickle as pickle
+from collections import OrderedDict# add by james
 
 logger = logging.getLogger(__name__)
 
@@ -80,7 +81,8 @@ class RNN(object):
         # for every parameter, we maintain it's last update
         # the idea here is to use "momentum"
         # keep moving mostly in the same direction
-        self.updates = {}
+        #self.updates = {} # comment by james
+        self.updates = OrderedDict()# add by james
         for param in self.params:
             init = np.zeros(param.get_value(borrow=True).shape,
                             dtype=theano.config.floatX)
@@ -270,7 +272,8 @@ class MetaRNN(BaseEstimator):
 
     def __getstate__(self):
         """ Return state sequence."""
-        params = self._get_params()  # parameters set in constructor
+        params = self.get_params()  # parameters set in constructor
+        #params = self.params  # JM maybe trash
         weights = [p.get_value() for p in self.rnn.params]
         state = (params, weights)
         return state
@@ -389,7 +392,8 @@ class MetaRNN(BaseEstimator):
             gparam = T.grad(cost, param)
             gparams.append(gparam)
 
-        updates = {}
+        #updates = {} #Add by James
+        updates = OrderedDict()
         for param, gparam in zip(self.rnn.params, gparams):
             weight_update = self.rnn.updates[param]
             upd = mom * weight_update - l_r * gparam
@@ -597,8 +601,8 @@ def test_softmax(n_epochs=250):
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     t0 = time.time()
-    test_real()
+    #test_real()
     # problem takes more epochs to solve
-    #test_binary(multiple_out=True, n_epochs=2400)
+    test_binary(multiple_out=True, n_epochs=2400)
     #test_softmax(n_epochs=250)
     print "Elapsed time: %f" % (time.time() - t0)
