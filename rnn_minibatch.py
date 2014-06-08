@@ -317,7 +317,7 @@ class MetaRNN(BaseEstimator):
 
     def __getstate__(self):
         """ Return state sequence."""
-        params = self._get_params()  # parameters set in constructor
+        params = self.get_params()  # parameters set in constructor
         theta = self.rnn.theta.get_value()
         state = (params, theta)
         return state
@@ -840,6 +840,7 @@ def test_binary(multiple_out=False, n_epochs=1000, optimizer='cg'):
     np.random.seed(0)
     # simple lag test
     seq = np.random.randn(n_steps, n_seq * n_batches, n_in)
+    seq = seq.astype(np.float32)
     targets = np.zeros((n_steps, n_seq * n_batches, n_out))
 
     # whether lag 1 (dim 3) is greater than lag 2 (dim 0)
@@ -858,26 +859,29 @@ def test_binary(multiple_out=False, n_epochs=1000, optimizer='cg'):
 
     model.fit(seq, targets, validate_every=100, compute_zero_one=True,
               optimizer=optimizer)
+    model.save()
 
     seqs = xrange(10)
 
-    plt.close('all')
+    #plt.close('all')
     for seq_num in seqs:
-        fig = plt.figure()
-        ax1 = plt.subplot(211)
-        plt.plot(seq[:, seq_num, :])
-        ax1.set_title('input')
-        ax2 = plt.subplot(212)
-        true_targets = plt.step(xrange(n_steps), targets[:, seq_num, :],
-                                marker='o')
+        #fig = plt.figure()
+        #ax1 = plt.subplot(211)
+        #plt.plot(seq[:, seq_num, :])
+        #ax1.set_title('input')
+        #ax2 = plt.subplot(212)
+        #true_targets = plt.step(xrange(n_steps), targets[:, seq_num, :],
+                                #marker='o')
 
         guess = model.predict_proba(seq[:, seq_num, :][:, np.newaxis, :])
-        guessed_targets = plt.step(xrange(n_steps), guess.squeeze())
-        plt.setp(guessed_targets, linestyle='--', marker='d')
-        for i, x in enumerate(guessed_targets):
-            x.set_color(true_targets[i].get_color())
-        ax2.set_ylim((-0.1, 1.1))
-        ax2.set_title('solid: true output, dashed: model output (prob)')
+        print guess
+        print targets[:,seq_num,:][:, np.newaxis, :]
+        #guessed_targets = plt.step(xrange(n_steps), guess.squeeze())
+        #plt.setp(guessed_targets, linestyle='--', marker='d')
+        #for i, x in enumerate(guessed_targets):
+        #    x.set_color(true_targets[i].get_color())
+        #ax2.set_ylim((-0.1, 1.1))
+        #ax2.set_title('solid: true output, dashed: model output (prob)')
 
 
 def test_softmax(n_epochs=250, optimizer='cg'):
@@ -938,7 +942,7 @@ def test_softmax(n_epochs=250, optimizer='cg'):
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     t0 = time.time()
-    test_real(n_epochs=1000)
-    #test_binary(optimizer='sgd', n_epochs=1000)
+    #test_real(n_epochs=1000)
+    test_binary(optimizer='sgd', n_epochs=1000)
     #test_softmax(n_epochs=250, optimizer='sgd')
     print "Elapsed time: %f" % (time.time() - t0)
